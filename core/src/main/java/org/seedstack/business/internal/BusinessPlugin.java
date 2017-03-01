@@ -57,6 +57,7 @@ public class BusinessPlugin extends AbstractSeedPlugin {
     private final Collection<Class<?>> serviceInterfaces = new HashSet<>();
     private final Collection<Class<?>> policyInterfaces = new HashSet<>();
     private final Collection<Class<?>> finderInterfaces = new HashSet<>();
+    private final Collection<Class<?>> dtoOfClasses = new HashSet<>();
     private final Collection<Class<? extends Assembler>> defaultAssemblerClasses = new HashSet<>();
     private final Collection<Class<? extends Repository>> defaultRepositoryClasses = new HashSet<>();
 
@@ -84,7 +85,8 @@ public class BusinessPlugin extends AbstractSeedPlugin {
                     .specification(BusinessSpecifications.REPOSITORY)
                     .specification(BusinessSpecifications.DEFAULT_ASSEMBLER)
                     .specification(BusinessSpecifications.DEFAULT_REPOSITORY)
-                    .specification(BusinessSpecifications.DTO_OF).build();
+                    .specification(BusinessSpecifications.DTO_OF)
+                    .build();
         } else {
             ClasspathScanRequestBuilder classpathScanRequestBuilder = classpathScanRequestBuilder();
             classpathRequestForDescendantTypesOf(classpathScanRequestBuilder, factoryInterfaces);
@@ -109,6 +111,9 @@ public class BusinessPlugin extends AbstractSeedPlugin {
             get(initContext, BusinessSpecifications.CLASSIC_ASSEMBLER, Assembler.class, assemblerClasses);
             LOGGER.debug("Assembler classes => {}", assemblerClasses);
 
+            get(initContext, BusinessSpecifications.REPOSITORY, Repository.class, repositoriesInterfaces);
+            LOGGER.debug("Repository interfaces => {}", repositoriesInterfaces);
+
             get(initContext, BusinessSpecifications.FACTORY, Factory.class, factoryInterfaces);
             LOGGER.debug("Factory interfaces => {}", factoryInterfaces);
 
@@ -124,8 +129,8 @@ public class BusinessPlugin extends AbstractSeedPlugin {
             get(initContext, BusinessSpecifications.POLICY, Object.class, policyInterfaces);
             LOGGER.debug("Policy interfaces => {}", policyInterfaces);
 
-            get(initContext, BusinessSpecifications.REPOSITORY, Repository.class, repositoriesInterfaces);
-            LOGGER.debug("Repository interfaces => {}", repositoriesInterfaces);
+            get(initContext, BusinessSpecifications.DTO_OF, Object.class, dtoOfClasses);
+            LOGGER.debug("DtoOf classes => {}", dtoOfClasses);
 
             // Default implementations
             get(initContext, BusinessSpecifications.DEFAULT_REPOSITORY, Repository.class, defaultRepositoryClasses);
@@ -155,10 +160,10 @@ public class BusinessPlugin extends AbstractSeedPlugin {
             bindingStrategies.addAll(new DefaultRepositoryCollector(defaultRepositoryClasses, getApplication()).collect(aggregateClasses));
 
             // Bindings for default factories
-            //bindingStrategies.addAll(new DefaultFactoryCollector(factoryInterfaces).collect(producibleClasses));
+            bindingStrategies.addAll(new DefaultFactoryCollector(factoryInterfaces).collect(producibleClasses));
 
             // Bindings for default assemblers
-            bindingStrategies.addAll(new DefaultAssemblerCollector(defaultAssemblerClasses).collect(spec.get(BusinessSpecifications.DTO_OF)));
+            bindingStrategies.addAll(new DefaultAssemblerCollector(defaultAssemblerClasses).collect(dtoOfClasses));
 
             return InitState.INITIALIZED;
         }
