@@ -11,7 +11,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
-import org.seedstack.business.domain.GenericFactory;
+import org.seedstack.business.domain.Factory;
 import org.seedstack.business.domain.identity.IdentityHandler;
 import org.seedstack.business.domain.identity.IdentityService;
 import org.seedstack.business.internal.BusinessErrorCode;
@@ -39,7 +39,7 @@ class IdentityModule extends AbstractModule {
         bind(IdentityService.class).to(IdentityServiceInternal.class);
         IdentityInterceptor identityInterceptor = new IdentityInterceptor();
         requestInjection(identityInterceptor);
-        bindInterceptor(Matchers.subclassesOf(GenericFactory.class), factoryMethods(), identityInterceptor);
+        bindInterceptor(Matchers.subclassesOf(Factory.class), factoryMethods(), identityInterceptor);
     }
 
     private void bindIdentityHandler() {
@@ -69,7 +69,7 @@ class IdentityModule extends AbstractModule {
     }
 
     private Matcher<Method> factoryMethods() {
-        return new MethodMatcherBuilder(ExecutablePredicates.<Method>executableBelongsToClassAssignableTo(GenericFactory.class)
+        return new MethodMatcherBuilder(ExecutablePredicates.<Method>executableBelongsToClassAssignableTo(Factory.class)
                 .and(CreateResolver.INSTANCE)
         ).build();
     }

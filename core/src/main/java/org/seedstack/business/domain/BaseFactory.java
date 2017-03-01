@@ -18,7 +18,7 @@ import org.seedstack.seed.core.internal.guice.ProxyUtils;
  * To be a valid Domain Factory implementation, the implementation must respects the followings:
  * </p>
  * <ul>
- * <li>implements the Domain Factory interface see {@linkplain org.seedstack.business.domain.GenericFactory}</li>
+ * <li>implements the Domain Factory interface see {@linkplain Factory}</li>
  * <li>extends this class {@link BaseFactory}.</li>
  * </ul>
  * <pre>
@@ -36,7 +36,7 @@ import org.seedstack.seed.core.internal.guice.ProxyUtils;
  * }
  * </pre>
  * And it is sufficient enough for the Domain Factory implementation will be available via its interface, the one
- * that extending {@link org.seedstack.business.domain.GenericFactory}.
+ * that extending {@link Factory}.
  * In the GenericFactory javadoc example, productFactory base will be available like this:
  * <pre>
  * // productFactory will contain an instance of ProductFactoryBase.
@@ -46,7 +46,7 @@ import org.seedstack.seed.core.internal.guice.ProxyUtils;
  *
  * @param <DO> Domain Object type to be produced.
  */
-public abstract class BaseFactory<DO extends DomainObject & Producible> implements GenericFactory<DO> {
+public abstract class BaseFactory<DO extends DomainObject & Producible> implements Factory<DO> {
     protected final Class<DO> producedClass;
 
     @SuppressWarnings("unchecked")

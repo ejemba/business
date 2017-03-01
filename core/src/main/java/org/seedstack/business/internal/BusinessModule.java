@@ -9,6 +9,7 @@ package org.seedstack.business.internal;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
+import org.seedstack.business.assembler.Assembler;
 import org.seedstack.business.assembler.FluentAssembler;
 import org.seedstack.business.domain.DomainRegistry;
 import org.seedstack.business.internal.assembler.dsl.FluentAssemblerImpl;
@@ -22,24 +23,13 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
-/**
- * The business module.
- */
-@BusinessConcern
 class BusinessModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(BusinessModule.class);
     private final Map<Key<?>, Class<?>> bindings;
-    private final Collection<Class<?>> assemblersClasses;
+    private final Collection<Class<? extends Assembler>> assemblersClasses;
     private final Collection<BindingStrategy> bindingStrategies;
 
-    /**
-     * Constructor.
-     *
-     * @param assemblersClasses the collection of assembler classes
-     * @param bindings          the map of interface and class to bind
-     * @param bindingStrategies the collection of binding strategy
-     */
-    public BusinessModule(Collection<Class<?>> assemblersClasses, Map<Key<?>, Class<?>> bindings, Collection<BindingStrategy> bindingStrategies) {
+    BusinessModule(Collection<Class<? extends Assembler>> assemblersClasses, Map<Key<?>, Class<?>> bindings, Collection<BindingStrategy> bindingStrategies) {
         this.assemblersClasses = assemblersClasses;
         this.bindings = bindings;
         this.bindingStrategies = bindingStrategies;

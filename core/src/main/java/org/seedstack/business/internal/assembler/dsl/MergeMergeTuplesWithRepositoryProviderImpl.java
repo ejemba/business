@@ -11,7 +11,7 @@ import org.javatuples.Triplet;
 import org.javatuples.Tuple;
 import org.seedstack.business.internal.Tuples;
 import org.seedstack.business.domain.AggregateRoot;
-import org.seedstack.business.domain.GenericFactory;
+import org.seedstack.business.domain.Factory;
 import org.seedstack.business.domain.Repository;
 import org.seedstack.business.assembler.Assembler;
 import org.seedstack.business.assembler.dsl.AggregateNotFoundException;
@@ -54,8 +54,8 @@ public class MergeMergeTuplesWithRepositoryProviderImpl<T extends Tuple> extends
             for (Object o : aggregateClasses) {
                 if (o instanceof Class<?>) {
                     Class<? extends AggregateRoot<?>> aggregateClass = (Class<? extends AggregateRoot<?>>) o;
-                    GenericFactory<?> genericFactory = context.genericFactoryOf(aggregateClass);
-                    Object aggregate = getAggregateFromFactory(genericFactory, aggregateClass, parameterHolder.parametersOfAggregateRoot(aggregateIndex));
+                    Factory<?> factory = context.genericFactoryOf(aggregateClass);
+                    Object aggregate = getAggregateFromFactory(factory, aggregateClass, parameterHolder.parametersOfAggregateRoot(aggregateIndex));
                     aggregateRoots.add(aggregate);
                 } else {
                     // TODO replace by a seed exception

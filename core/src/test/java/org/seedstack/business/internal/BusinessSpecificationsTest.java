@@ -22,8 +22,7 @@ import org.seedstack.business.domain.DomainPolicy;
 import org.seedstack.business.domain.DomainRepository;
 import org.seedstack.business.domain.DomainValueObject;
 import org.seedstack.business.domain.Factory;
-import org.seedstack.business.domain.GenericFactory;
-import org.seedstack.business.domain.GenericRepository;
+import org.seedstack.business.domain.Repository;
 import org.seedstack.business.finder.Finder;
 import org.seedstack.business.finder.RangeFinder;
 import org.seedstack.business.spi.GenericImplementation;
@@ -165,7 +164,7 @@ public class BusinessSpecificationsTest {
     interface MyFactory1 {
     }
 
-    interface MyFactory2 extends GenericFactory<MyAggregateRoot1> {
+    interface MyFactory2 extends Factory<MyAggregateRoot1> {
     }
 
     @DomainFactory
@@ -193,7 +192,7 @@ public class BusinessSpecificationsTest {
     }
 
     @Ignore
-    private interface MyRepository2 extends GenericRepository<MyAggregateRoot1, String> {
+    private interface MyRepository2 extends Repository<MyAggregateRoot1, String> {
     }
 
     @DomainRepository
@@ -211,7 +210,7 @@ public class BusinessSpecificationsTest {
 
     @GenericImplementation
     @Ignore
-    private static class MyRepositoryImpl1<A extends AggregateRoot<K>, K> implements GenericRepository<A, K> {
+    private static class MyRepositoryImpl1<A extends AggregateRoot<K>, K> implements Repository<A, K> {
         @Override
         public A load(K id) {
             return null;

@@ -12,7 +12,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.seedstack.business.domain.Factory;
-import org.seedstack.business.domain.GenericFactory;
 import org.seedstack.business.fixtures.factory.MyFactoryAggregate;
 import org.seedstack.business.fixtures.identity.MyAggregate;
 import org.seedstack.business.fixtures.identity.MyAggregateFactory;
@@ -53,7 +52,7 @@ public class FactoryIT {
     Factory<MyFactoryAggregate> myAggregateAutoFactory;
 
     @Inject
-    GenericFactory<MyAggregate> myAggregateGenericFactory;
+    Factory<MyAggregate> myAggregateGenericFactory;
 
     @Inject
     MyAggregateFactory myAggregateFactory;
@@ -70,7 +69,7 @@ public class FactoryIT {
         Assertions.assertThat(myDomainServiceFactory).isNotNull();
         Assertions.assertThat(myDomainServiceFactory).isInstanceOf(FactoryInternal.class);
 
-        Assertions.assertThat(myDomainPolicyFactory).isNotNull();//DomPolicyImpl1
+        Assertions.assertThat(myDomainPolicyFactory).isNotNull();
         Assertions.assertThat(myDomainPolicyFactory).isInstanceOf(FactoryInternal.class);
 
         Assertions.assertThat(myAggregateAutoFactory).isNotNull();

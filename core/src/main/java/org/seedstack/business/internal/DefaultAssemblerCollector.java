@@ -27,11 +27,6 @@ import java.util.Set;
 class DefaultAssemblerCollector {
     private final Collection<Class<? extends Assembler>> defaultAssemblersClasses;
 
-    /**
-     * Constructor.
-     *
-     * @param defaultAssemblersClasses the default assembler classes to bind
-     */
     public DefaultAssemblerCollector(Collection<Class<? extends Assembler>> defaultAssemblersClasses) {
         this.defaultAssemblersClasses = defaultAssemblersClasses;
     }

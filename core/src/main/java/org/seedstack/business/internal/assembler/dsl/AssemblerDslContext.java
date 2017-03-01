@@ -66,7 +66,7 @@ public class AssemblerDslContext {
         return registry.tupleAssemblerOf(aggregateRootTuple, dto);
     }
 
-    public GenericFactory<?> genericFactoryOf(Class<? extends AggregateRoot<?>> aggregateRoot) {
+    public Factory<?> genericFactoryOf(Class<? extends AggregateRoot<?>> aggregateRoot) {
         return registry.genericFactoryOf(aggregateRoot);
     }
 

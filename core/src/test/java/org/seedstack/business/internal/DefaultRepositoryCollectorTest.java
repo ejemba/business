@@ -20,6 +20,7 @@ import org.seedstack.business.domain.BaseAggregateRoot;
 import org.seedstack.business.domain.BaseRepository;
 import org.seedstack.business.domain.Repository;
 import org.seedstack.business.fixtures.repositories.MyQualifier;
+import org.seedstack.business.internal.utils.BusinessUtils;
 import org.seedstack.seed.Application;
 import org.seedstack.seed.ClassConfiguration;
 import org.seedstack.seed.core.internal.guice.BindingStrategy;
@@ -34,7 +35,6 @@ import static org.mockito.Mockito.when;
 
 
 public class DefaultRepositoryCollectorTest {
-
     private DefaultRepositoryCollector underTest;
     private Application application;
     private TypeLiteral<?> genericInterface = TypeLiteral.get(Types.newParameterizedType(Repository.class, new Type[]{MyAgg.class}));
@@ -43,7 +43,6 @@ public class DefaultRepositoryCollectorTest {
     public void before() {
         application = mock(Application.class);
         underTest = new DefaultRepositoryCollector(
-                Lists.newArrayList(MySubAgg1.class, MySubAgg2.class),
                 Lists.newArrayList(MyDefaultRepo.class),
                 application
         );
@@ -51,21 +50,21 @@ public class DefaultRepositoryCollectorTest {
 
     @Test
     public void testCollectSuperclasses() throws Exception {
-        Collection<BindingStrategy> bindingStrategies = underTest.collect();
+        Collection<BindingStrategy> bindingStrategies = underTest.collect(Lists.newArrayList(MySubAgg1.class, MySubAgg2.class));
         assertThat(((Map<?, ?>) Whitebox.getInternalState(bindingStrategies.iterator().next(), "constructorParamsMap")).size()).isEqualTo(3);
     }
 
     @Test
     public void testGetDefaultWithQualifierString() {
         when(application.getConfiguration(MyAgg.class)).thenReturn(ClassConfiguration.of(MyAgg.class, "defaultRepository", "my-qualifier"));
-        Key<?> key = underTest.defaultRepositoryQualifier(MyAgg.class, genericInterface);
+        Key<?> key = BusinessUtils.defaultQualifier(application, "defaultRepository", MyAgg.class, genericInterface);
         assertThat(key.getAnnotation()).isEqualTo(Names.named("my-qualifier"));
     }
 
     @Test
     public void testGetDefaultWithQualifierAnnotation() {
         when(application.getConfiguration(MyAgg.class)).thenReturn(ClassConfiguration.of(MyAgg.class, "defaultRepository", "org.seedstack.business.fixtures.repositories.MyQualifier"));
-        Key<?> key = underTest.defaultRepositoryQualifier(MyAgg.class, genericInterface);
+        Key<?> key = BusinessUtils.defaultQualifier(application, "defaultRepository", MyAgg.class, genericInterface);
         assertThat(key.getAnnotationType()).isEqualTo(MyQualifier.class);
     }
 

@@ -14,7 +14,6 @@ import org.seedstack.business.assembler.Assembler;
 import org.seedstack.business.domain.AggregateRoot;
 import org.seedstack.business.domain.DomainObject;
 import org.seedstack.business.domain.Factory;
-import org.seedstack.business.domain.GenericFactory;
 import org.seedstack.business.internal.assembler.dsl.resolver.DtoInfoResolver;
 import org.seedstack.business.internal.assembler.dsl.resolver.ParameterHolder;
 import org.seedstack.business.internal.assembler.dsl.resolver.impl.AnnotationResolver;
@@ -103,9 +102,9 @@ public class BaseAggAssemblerWithRepoProviderImpl<A extends AggregateRoot<?>> {
 
     @SuppressWarnings("unchecked")
     protected A fromFactory(Class<? extends AggregateRoot<?>> aggregateClass, Object dto) {
-        GenericFactory<A> genericFactory = (GenericFactory<A>) context.genericFactoryOf(aggregateClass);
+        Factory<A> factory = (Factory<A>) context.genericFactoryOf(aggregateClass);
         ParameterHolder parameterHolder = dtoInfoResolver.resolveAggregate(dto);
-        A aggregateRoot = (A) getAggregateFromFactory(genericFactory, aggregateClass, parameterHolder.parameters());
+        A aggregateRoot = (A) getAggregateFromFactory(factory, aggregateClass, parameterHolder.parameters());
         return assembleWithDto(aggregateRoot, dto);
     }
 
@@ -122,17 +121,16 @@ public class BaseAggAssemblerWithRepoProviderImpl<A extends AggregateRoot<?>> {
         return aggregateRoots;
     }
 
-    protected Object getAggregateFromFactory(GenericFactory<?> factory, Class<? extends AggregateRoot<?>> aggregateClass, Object[] parameters) {
+    protected Object getAggregateFromFactory(Factory<?> factory, Class<? extends AggregateRoot<?>> aggregateClass, Object[] parameters) {
         checkNotNull(factory);
         checkNotNull(aggregateClass);
         checkNotNull(parameters);
 
         if (Factory.class.isAssignableFrom(factory.getClass())) {
-            Factory<?> defaultFactory = (Factory<?>) factory;
             if (parameters.length == 0) {
-                return defaultFactory.create();
+                return factory.create();
             } else {
-                return defaultFactory.create(parameters);
+                return factory.create(parameters);
             }
         } else {
             // Find the method in the factory which match the signature determined with the previously extracted parameters

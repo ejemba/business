@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.seedstack.business.domain.AggregateRoot;
-import org.seedstack.business.domain.GenericFactory;
+import org.seedstack.business.domain.Factory;
 import org.seedstack.business.domain.Repository;
 import org.seedstack.business.assembler.Assembler;
 import org.seedstack.business.assembler.dsl.AggregateNotFoundException;
@@ -44,7 +44,7 @@ public class MergeAggregateWithRepositoryProviderImplTest {
         order = new Order("1", "death star");
 
         Mockito.when(registry.repositoryOf(Order.class)).thenReturn((Repository) repository);
-        Mockito.when(registry.genericFactoryOf(Order.class)).thenReturn((GenericFactory) orderFactory);
+        Mockito.when(registry.genericFactoryOf(Order.class)).thenReturn((Factory) orderFactory);
         Mockito.when(registry.assemblerOf(Order.class, OrderDto.class)).thenReturn((Assembler) new AutoAssembler());
 
         underTest = new MergeMergeAggregateWithRepositoryProviderImpl<>(context, Order.class, new OrderDto("1", "lightsaber"));
