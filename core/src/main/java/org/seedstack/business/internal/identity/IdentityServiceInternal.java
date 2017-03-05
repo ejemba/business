@@ -8,11 +8,11 @@
 
 package org.seedstack.business.internal.identity;
 
+import com.google.common.base.Strings;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import net.jodah.typetools.TypeResolver;
-import org.apache.commons.lang.StringUtils;
 import org.seedstack.business.domain.Entity;
 import org.seedstack.business.domain.Identity;
 import org.seedstack.business.domain.identity.IdentityHandler;
@@ -21,13 +21,10 @@ import org.seedstack.business.internal.BusinessErrorCode;
 import org.seedstack.seed.Application;
 import org.seedstack.seed.ClassConfiguration;
 import org.seedstack.seed.SeedException;
-import org.seedstack.shed.reflect.Classes;
 
 import javax.inject.Inject;
 import java.lang.reflect.Field;
 import java.util.Optional;
-
-import static org.seedstack.shed.reflect.AnnotationPredicates.elementAnnotatedWith;
 
 /**
  * IdentityServiceInternal identify the handler and the configuration used to
@@ -102,7 +99,7 @@ class IdentityServiceInternal implements IdentityService {
         } else {
             String identityQualifier = entityConfiguration.get(IDENTITY_HANDLER_KEY);
 
-            if (StringUtils.isNotBlank(identityQualifier)) {
+            if (!Strings.isNullOrEmpty(identityQualifier)) {
                 identityHandler = injector.getInstance(Key.get(identity.handler(), Names.named(identityQualifier)));
             } else {
                 throw SeedException.createNew(BusinessErrorCode.NO_IDENTITY_HANDLER_QUALIFIER_FOUND_ON_ENTITY)
@@ -122,12 +119,7 @@ class IdentityServiceInternal implements IdentityService {
     }
 
     private Field getEntityIdField(Entity<?> entity) {
-        Optional<Field> field = Classes.from(entity.getClass())
-                .traversingSuperclasses()
-                .fields()
-                .filter(elementAnnotatedWith(Identity.class, false))
-                .findFirst();
-
+        Optional<Field> field = IdentityAnnotationResolver.INSTANCE.resolveField(entity.getClass());
         if (field.isPresent()) {
             return field.get();
         } else {

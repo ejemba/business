@@ -18,7 +18,7 @@ import org.seedstack.seed.SeedException;
 /**
  * FactoryInternalTest
  */
-public class FactoryInternalTest {
+public class DefaultFactoryTest {
 
     Factory<MyAggregateTest> myFactory;
 
@@ -29,7 +29,7 @@ public class FactoryInternalTest {
 
     @Before
     public void before() {
-        myFactory = new FactoryInternal<>(new Class<?>[]{MyAggregateTest.class});
+        myFactory = new DefaultFactory<>(new Class<?>[]{MyAggregateTest.class});
     }
 
     @Test

@@ -25,9 +25,9 @@
     <name>business</name>
 
     <properties>
-        <seed.version>3.1.0</seed.version>
+        <seed.version>3.1.1-SNAPSHOT</seed.version>
 
-        <compatibility.version>3.0.1</compatibility.version>
+        <compatibility.skip>true</compatibility.skip>
 
         <bintray.package>business</bintray.package>
     </properties>

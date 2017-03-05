@@ -7,9 +7,17 @@
  */
 package org.seedstack.business.domain;
 
-import net.jodah.typetools.TypeResolver;
 import org.seedstack.business.Producible;
-import org.seedstack.seed.core.internal.guice.ProxyUtils;
+import org.seedstack.business.domain.identity.IdentityService;
+import org.seedstack.business.internal.BusinessErrorCode;
+import org.seedstack.business.internal.identity.IdentityAnnotationResolver;
+import org.seedstack.business.internal.utils.BusinessUtils;
+import org.seedstack.business.internal.utils.MethodMatcher;
+import org.seedstack.seed.SeedException;
+
+import javax.inject.Inject;
+import java.lang.reflect.Constructor;
+import java.util.Arrays;
 
 /**
  * This class has to be extended to create a domain factory implementation. It offers the plumbing necessary
@@ -44,21 +52,51 @@ import org.seedstack.seed.core.internal.guice.ProxyUtils;
  * ProductFactory productFactory;
  * </pre>
  *
- * @param <DO> Domain Object type to be produced.
+ * @param <T> Domain Object type to be produced.
  */
-public abstract class BaseFactory<DO extends DomainObject & Producible> implements Factory<DO> {
-    protected final Class<DO> producedClass;
+public abstract class BaseFactory<T extends DomainObject & Producible> implements Factory<T> {
+    private final Class<T> producedClass;
+    @Inject
+    private IdentityService identityService;
 
     @SuppressWarnings("unchecked")
     protected BaseFactory() {
-        Class<?> subType = ProxyUtils.cleanProxy(getClass());
-        producedClass = (Class<DO>) TypeResolver.resolveRawArguments(TypeResolver.resolveGenericType(BaseFactory.class, subType), subType)[0];
+        this.producedClass = (Class<T>) BusinessUtils.resolveGenerics(Factory.class, getClass())[0];
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
-    public Class<DO> getProducedClass() {
+    public Class<T> getProducedClass() {
         return producedClass;
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public T create(Object... args) {
+        Class<T> effectivelyProducedClass = getProducedClass();
+        Constructor<T> constructor = MethodMatcher.findMatchingConstructor(effectivelyProducedClass, args);
+        if (constructor == null) {
+            throw SeedException.createNew(BusinessErrorCode.DOMAIN_OBJECT_CONSTRUCTOR_NOT_FOUND)
+                    .put("domainObject", effectivelyProducedClass).put("parameters", Arrays.toString(args));
+        }
+
+        T producedInstance;
+        try {
+            constructor.setAccessible(true);
+            producedInstance = constructor.newInstance(args);
+        } catch (Exception e) {
+            throw SeedException.wrap(e, BusinessErrorCode.UNABLE_TO_INVOKE_CONSTRUCTOR)
+                    .put("constructor", constructor)
+                    .put("domainObject", effectivelyProducedClass)
+                    .put("parameters", Arrays.toString(args));
+        }
+
+        if (producedInstance instanceof Entity) {
+            if (IdentityAnnotationResolver.INSTANCE.test(effectivelyProducedClass)) {
+                producedInstance = (T) identityService.identify((Entity<?>) producedInstance);
+            }
+        }
+
+        return producedInstance;
+    }
 }

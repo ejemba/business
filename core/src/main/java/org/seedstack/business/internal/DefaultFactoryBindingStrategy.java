@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package org.seedstack.business.internal.strategy;
+package org.seedstack.business.internal;
 
 import com.google.common.collect.Multimap;
 import com.google.inject.Binder;
@@ -51,40 +51,26 @@ import java.util.Map;
  * Notice that if {@code MyPolicyImpl} is qualified, the factory injectee point should be also qualified.
  * </p>
  */
-public class FactoryPatternBindingStrategy<T> implements BindingStrategy {
+class DefaultFactoryBindingStrategy<T> implements BindingStrategy {
     private static final Class<?> FACTORY_CLASS = GenericGuiceFactory.class;
     private final Class<T> injecteeClass;
     private final Class<? extends T> injectedClass;
     private final Multimap<Type, Class<?>> typeVariables;
-    private final boolean bindAssistedFactory;
+    private final boolean bindGuiceFactory;
 
     /**
      * Constructors.
      *
-     * @param injecteeClass   the class to bind
-     * @param injectedClass   the implementation to bind with unresolved producedTypeMap
-     * @param producedTypeMap the map of produced type and produced type implementation
+     * @param injecteeClass    the class to bind
+     * @param injectedClass    the implementation to bind with unresolved producedTypeMap
+     * @param producedTypeMap  the map of produced type and produced type implementation
+     * @param bindGuiceFactory allow to control the binding of the Guice assisted factory
      */
-    public FactoryPatternBindingStrategy(Class<T> injecteeClass, Class<? extends T> injectedClass, Multimap<Type, Class<?>> producedTypeMap) {
+    DefaultFactoryBindingStrategy(Class<T> injecteeClass, Class<? extends T> injectedClass, Multimap<Type, Class<?>> producedTypeMap, boolean bindGuiceFactory) {
         this.injecteeClass = injecteeClass;
         this.injectedClass = injectedClass;
         this.typeVariables = producedTypeMap;
-        this.bindAssistedFactory = true;
-    }
-
-    /**
-     * Constructors.
-     *
-     * @param injecteeClass       the class to bind
-     * @param injectedClass       the implementation to bind with unresolved producedTypeMap
-     * @param producedTypeMap     the map of produced type and produced type implementation
-     * @param bindAssistedFactory allow to control the binding of the Guice assisted factory
-     */
-    public FactoryPatternBindingStrategy(Class<T> injecteeClass, Class<? extends T> injectedClass, Multimap<Type, Class<?>> producedTypeMap, boolean bindAssistedFactory) {
-        this.injecteeClass = injecteeClass;
-        this.injectedClass = injectedClass;
-        this.typeVariables = producedTypeMap;
-        this.bindAssistedFactory = bindAssistedFactory;
+        this.bindGuiceFactory = bindGuiceFactory;
     }
 
     @SuppressWarnings("unchecked")
@@ -103,7 +89,7 @@ public class FactoryPatternBindingStrategy<T> implements BindingStrategy {
         }
 
         // Assisted factory should not be bound twice
-        if (bindAssistedFactory) {
+        if (bindGuiceFactory) {
             TypeLiteral<?> guiceAssistedFactory = TypeLiteral.get(Types.newParameterizedType(FACTORY_CLASS, injectedClass));
             binder.install(guiceFactoryBuilder.build(guiceAssistedFactory));
         }

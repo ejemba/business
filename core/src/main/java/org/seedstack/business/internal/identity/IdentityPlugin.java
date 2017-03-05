@@ -14,20 +14,22 @@ import io.nuun.kernel.api.plugin.InitState;
 import io.nuun.kernel.api.plugin.context.InitContext;
 import io.nuun.kernel.api.plugin.request.ClasspathScanRequest;
 import io.nuun.kernel.core.AbstractPlugin;
-import org.kametic.specifications.Specification;
-import org.seedstack.business.internal.BusinessSpecifications;
 import org.seedstack.business.domain.identity.IdentityHandler;
+import org.seedstack.business.internal.BusinessSpecifications;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.HashSet;
 
-import static org.seedstack.business.internal.utils.BusinessUtils.convertClassCollection;
+import static org.seedstack.business.internal.utils.BusinessUtils.streamClasses;
 
 /**
- * Plugin used for identity management, scan all classes that implements IdentityHandler
+ * Plugin handling for identity management.
  */
 public class IdentityPlugin extends AbstractPlugin {
-    private Collection<Class<? extends IdentityHandler>> identityHandlerClasses;
+    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityPlugin.class);
+    private Collection<Class<? extends IdentityHandler>> identityHandlerClasses = new HashSet<>();
 
     @Override
     public String name() {
@@ -42,10 +44,9 @@ public class IdentityPlugin extends AbstractPlugin {
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
     public InitState init(InitContext initContext) {
-        Map<Specification, Collection<Class<?>>> spec = initContext.scannedTypesBySpecification();
-        identityHandlerClasses = convertClassCollection(IdentityHandler.class, spec.get(BusinessSpecifications.IDENTITY_HANDLER));
+        streamClasses(initContext, BusinessSpecifications.IDENTITY_HANDLER, IdentityHandler.class).forEach(identityHandlerClasses::add);
+        LOGGER.debug("Identity handler classes => {}", identityHandlerClasses);
         return InitState.INITIALIZED;
     }
 

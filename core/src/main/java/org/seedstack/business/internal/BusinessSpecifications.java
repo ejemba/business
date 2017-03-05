@@ -111,9 +111,7 @@ public final class BusinessSpecifications {
      */
     public static final Specification<Class<?>> PRODUCIBLE = new SpecificationBuilder<>(
             classIsAssignableFrom(Producible.class)
-                    .and(classIsAssignableFrom(DomainObject.class))
-                    .and(classIsInterface().negate())
-                    .and(classModifierIs(Modifier.ABSTRACT).negate()))
+                    .and(classIsAssignableFrom(DomainObject.class)))
             .build();
 
     /**
