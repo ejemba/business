@@ -8,29 +8,30 @@
 package org.seedstack.business.internal.assembler.dsl;
 
 import org.javatuples.Tuple;
-import org.seedstack.business.internal.BusinessSpecifications;
-import org.seedstack.business.internal.Tuples;
 import org.seedstack.business.assembler.Assembler;
 import org.seedstack.business.domain.AggregateRoot;
 import org.seedstack.business.domain.DomainObject;
 import org.seedstack.business.domain.Factory;
+import org.seedstack.business.internal.BusinessErrorCode;
+import org.seedstack.business.internal.BusinessSpecifications;
+import org.seedstack.business.internal.Tuples;
 import org.seedstack.business.internal.assembler.dsl.resolver.DtoInfoResolver;
 import org.seedstack.business.internal.assembler.dsl.resolver.ParameterHolder;
 import org.seedstack.business.internal.assembler.dsl.resolver.impl.AnnotationResolver;
 import org.seedstack.business.internal.utils.BusinessUtils;
 import org.seedstack.business.internal.utils.MethodMatcher;
+import org.seedstack.seed.SeedException;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class BaseAggAssemblerWithRepoProviderImpl<A extends AggregateRoot<?>> {
-
     protected final DtoInfoResolver dtoInfoResolver = new AnnotationResolver();
     protected final AssemblerDslContext context;
 
@@ -126,31 +127,37 @@ public class BaseAggAssemblerWithRepoProviderImpl<A extends AggregateRoot<?>> {
         checkNotNull(aggregateClass);
         checkNotNull(parameters);
 
-        if (Factory.class.isAssignableFrom(factory.getClass())) {
-            if (parameters.length == 0) {
-                return factory.create();
-            } else {
-                return factory.create(parameters);
-            }
-        } else {
-            // Find the method in the factory which match the signature determined with the previously extracted parameters
-            Method factoryMethod = MethodMatcher.findMatchingMethod(factory.getClass(), aggregateClass, parameters);
+        // Find the method in the factory which match the signature determined with the previously extracted parameters
+        Method factoryMethod;
+        boolean useDefaultFactory = false;
+        try {
+            factoryMethod = MethodMatcher.findMatchingMethod(factory.getClass(), aggregateClass, parameters);
             if (factoryMethod == null) {
-                throw new IllegalStateException(factory.getClass().getSimpleName() +
-                        " - Enable to find a method matching the parameters " +
-                        Arrays.toString(parameters));
+                useDefaultFactory = true;
             }
+        } catch (Exception e) {
+            throw SeedException.wrap(e, BusinessErrorCode.UNABLE_TO_FIND_FACTORY_METHOD)
+                    .put("aggregateClass", aggregateClass.getName())
+                    .put("parameters", Arrays.toString(parameters));
+        }
 
-            // Invoke the factory to create the aggregate root
-            try {
+        // Invoke the factory to create the aggregate root
+        try {
+            if (useDefaultFactory) {
+                return factory.create(parameters);
+            } else {
                 if (parameters.length == 0) {
                     return factoryMethod.invoke(factory);
                 } else {
                     return factoryMethod.invoke(factory, parameters);
                 }
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new IllegalStateException("Failed to call " + factoryMethod.getName(), e.getCause() != null ? e.getCause() : e);
             }
+        } catch (Exception e) {
+            throw SeedException.wrap(e, BusinessErrorCode.UNABLE_TO_INVOKE_FACTORY_METHOD)
+                    .put("aggregateClass", aggregateClass.getName())
+                    .put("factoryClass", factory.getClass().getName())
+                    .put("factoryMethod", Optional.ofNullable(factoryMethod).map(Method::getName).orElse("create"))
+                    .put("parameters", Arrays.toString(parameters));
         }
     }
 }
